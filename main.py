@@ -12,6 +12,7 @@ if __name__ == "__main__":
         "assets/1.png",
         "assets/2.png",
         "assets/3.png",
+        "assets/4.png",
         "assets/5.png",
         "assets/6.png",
         "assets/7.png",
@@ -144,6 +145,8 @@ if __name__ == "__main__":
 
         cv2.imwrite(f"assets/outputs/{os.path.basename(path)}", img)
 
+    ####
+    # Note that FINAL_CAMP_ASSIGNMENT contains all the info
     print("CASUALTY CAMP ASSIGNMENT:", "="*15)
     pprint(CASUALTY_ASSIGNMENT_DEETS)
 
