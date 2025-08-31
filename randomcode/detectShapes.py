@@ -1,7 +1,7 @@
-import cv2, random
-import numpy as np
+#! /usr/bin/env python3
+import cv2, random, sys
 
-image = cv2.imread("assets/samples/1.png", cv2.IMREAD_COLOR)
+image = cv2.imread(sys.argv[-1], cv2.IMREAD_COLOR)
 
 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
 clean = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
@@ -24,7 +24,7 @@ for i in newcnt:
     clr = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
     for j in i:
         print(j[0])
-        cv2.circle(image, j[0], 2, clr, 1)
+        cv2.circle(image, j[0], 2, clr, 3)
 # cv2.drawContours(image, contours, -1, (0, 255, 0), 2)
 
 print(len(contours))
