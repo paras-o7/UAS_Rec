@@ -4,14 +4,14 @@ import numpy as np
 __COLOR_RANGE = {
     "severe": (
         np.array([130, 150, 230], np.uint8),
-        np.array([190, 190, 255], np.uint8),
+        np.array([210, 210, 255], np.uint8),
     ),
     "moderate": (
         np.array([70, 180, 220], np.uint8),
         np.array([100, 230, 255], np.uint8),
     ),
     "safe": (
-        np.array([116, 242, 190], np.uint8),
+        np.array([100, 232, 180], np.uint8),
         np.array([130, 255, 200], np.uint8)
     ),
     "camp_pink": (
@@ -68,26 +68,29 @@ def get_humans_and_camps(
     _, thresh = cv2.threshold(grayed, 127, 255, cv2.THRESH_BINARY)
     contours = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
 
-    newcnt: list[np.ndarray] = []
-    for i in range(len(contours)):
-        epsilon = 0.04 * cv2.arcLength(contours[i], True)
-        newcnt.append(cv2.approxPolyDP(contours[i], epsilon, True))
-
-    ## FOR DEBUG, MARK ALL CONTOUR POINTS
-    # for i in newcnt:
+    # FOR DEBUG, MARK ALL CONTOUR POINTS
+    # for i in contours:
+    #     epsilon = 0.04 * cv2.arcLength(i, True)
+    #     cnt = cv2.approxPolyDP(i, epsilon, True)
     #     clr = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
     #     for j in i:
     #         cv2.circle(img, j[0], 4, clr, 1)
 
-    for cnt in newcnt:
+    for i in range(len(contours)):
+        epsilon = 0.04 * cv2.arcLength(contours[i], True)
+        cnt = cv2.approxPolyDP(contours[i], epsilon, True)
+
         M = cv2.moments(cnt)
-        cx = int(M["m10"] / M["m00"])
-        cy = int(M["m01"] / M["m00"])
+        
+        if cnt.shape[0] > 2:
+            cx = int(M["m10"] / M["m00"])
+            cy = int(M["m01"] / M["m00"])
+        else: 
+            continue
 
         # cnt.shape[0] = number of points in the contour
         # if the contour is a circle (camp)
-
-        if cnt.shape[0] not in [3, 4, 10]:
+        if cnt.shape[0] not in [3, 4, 10] and cnt.shape[0] > 2:
             clr = ""
             if MASK_CAMP_PINK[cy, cx]:
                 clr = "pink"
@@ -95,6 +98,7 @@ def get_humans_and_camps(
                 clr = "gray"
             elif MASK_CAMP_BLUE[cy, cx]:
                 clr = "blue"
+            assert clr != "", f"Failed to identify an unknown contour as a camp, COM: ({cx, cy})"
             camps[clr] = (cx, cy)
 
         # if the contour is not a circle (casualty)
@@ -108,6 +112,7 @@ def get_humans_and_camps(
                 severity = 2
             elif MASK_SEVERE[cy, cx]:
                 severity = 3
+            assert severity != 0, f"Failed to get severity info on a casualty, COM: ({cx}, {cy}), Maybe check mask ranges?"
 
             match cnt.shape[0]:
                 case 4:
@@ -116,6 +121,7 @@ def get_humans_and_camps(
                     age_grp = 2
                 case 10:
                     age_grp = 3
+            assert age_grp != 0, "Failed to identify the shape of a contour"
 
             casualties.append(((cx, cy), age_grp, severity))
 

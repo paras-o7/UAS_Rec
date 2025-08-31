@@ -1,1 +1,3 @@
 __pycache__
+assets/outputs/*
+!assets/outputs/.gitkeep
