@@ -4,7 +4,7 @@ import numpy as np
 from pprint import pprint
 from functions import ground_overlay, get_humans_and_camps, get_priority_for_all_points
 
-DEBUG = True
+DEBUG = False
 
 if __name__ == "__main__":
     # Path to images to analyse
@@ -12,7 +12,6 @@ if __name__ == "__main__":
         "assets/1.png",
         "assets/2.png",
         "assets/3.png",
-        "assets/4.png",
         "assets/5.png",
         "assets/6.png",
         "assets/7.png",
@@ -20,9 +19,6 @@ if __name__ == "__main__":
         "assets/9.png",
         "assets/10.png",
     ]
-
-    # Analysed images
-    OUTPUT_IMAGES_LIST: list[np.ndarray] = []
 
     # List of assigned camps to a casualty
     # {
@@ -42,11 +38,6 @@ if __name__ == "__main__":
     CAMP_PRIORITY_SCORES_AVG: dict[str, float] = dict()
 
     for path in IMAGES:
-        if DEBUG:
-            print(f"[+] DEBUG: READING IMAGE {path}")
-        img = cv2.imread(path, cv2.IMREAD_COLOR)
-        assert img is not None, f"Failed to read image on path {path}"
-
         # MAIN STORAGE OF THE DATA FROM THE IMAGE
         # CASUALTIES: [((x, y), age_grp, severity), ...]
         CASUALTIES: list[tuple[tuple[int, int], int, int]] = []
@@ -61,6 +52,11 @@ if __name__ == "__main__":
             "gray": [],
         }
 
+        if DEBUG:
+            print(f"[+] DEBUG: READING IMAGE {path}")
+        img = cv2.imread(path, cv2.IMREAD_COLOR)
+        assert img is not None, f"Failed to read image on path {path}"
+
         # This function analyses the casualties and camps in the photo
         # and puts the data in CAMPS and CASUALTIES.
         get_humans_and_camps(img, CAMPS, CASUALTIES)
@@ -71,7 +67,14 @@ if __name__ == "__main__":
             CAMPS, CASUALTIES
         )
         NCASUALTY = len(CASUALTIES)
+
+        ############################
         for i in range(NCASUALTY):
+
+            ####
+            # In `PINK_POINTS`, `BLUE_POINTS`, `GRAY_POINTS`, and `CASUALTIES`,
+            # each index represents the same point.
+
             if i % 3 == 0:  # PINK
                 maxidx = PINK_POINTS.index(max(PINK_POINTS))
             elif i % 3 == 1:  # BLUE
@@ -108,8 +111,7 @@ if __name__ == "__main__":
             BLUE_POINTS.pop(maxidx)
             GRAY_POINTS.pop(maxidx)
             CASUALTIES.pop(maxidx)
-        
-        OUTPUT_IMAGES_LIST.append(img)
+        ############################
 
         camp_scores: dict[str, list[tuple[int, int]]] = {
             "blue": [],

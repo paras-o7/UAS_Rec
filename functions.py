@@ -50,7 +50,9 @@ def get_humans_and_camps(
     MASK_MODERATE = cv2.inRange(
         img, __COLOR_RANGE["moderate"][0], __COLOR_RANGE["moderate"][1]
     )
-    MASK_SAFE = cv2.inRange(img, __COLOR_RANGE["safe"][0], __COLOR_RANGE["safe"][1])
+    MASK_SAFE = cv2.inRange(
+        img, __COLOR_RANGE["safe"][0], __COLOR_RANGE["safe"][1]
+    )
     MASK_CAMP_PINK = cv2.inRange(
         img, __COLOR_RANGE["camp_pink"][0], __COLOR_RANGE["camp_pink"][1]
     )
@@ -61,31 +63,26 @@ def get_humans_and_camps(
         img, __COLOR_RANGE["camp_blue"][0], __COLOR_RANGE["camp_blue"][1]
     )
 
+    # Improve image for better contour detection
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     clean = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+
 
     grayed = cv2.cvtColor(clean, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(grayed, 127, 255, cv2.THRESH_BINARY)
     contours = cv2.findContours(thresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]
 
-    # FOR DEBUG, MARK ALL CONTOUR POINTS
-    # for i in contours:
-    #     epsilon = 0.04 * cv2.arcLength(i, True)
-    #     cnt = cv2.approxPolyDP(i, epsilon, True)
-    #     clr = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-    #     for j in i:
-    #         cv2.circle(img, j[0], 4, clr, 1)
-
     for i in range(len(contours)):
+        # Approximate the polygons
         epsilon = 0.04 * cv2.arcLength(contours[i], True)
         cnt = cv2.approxPolyDP(contours[i], epsilon, True)
 
         M = cv2.moments(cnt)
-        
+
         if cnt.shape[0] > 2:
             cx = int(M["m10"] / M["m00"])
             cy = int(M["m01"] / M["m00"])
-        else: 
+        else:
             continue
 
         # cnt.shape[0] = number of points in the contour
@@ -98,13 +95,15 @@ def get_humans_and_camps(
                 clr = "gray"
             elif MASK_CAMP_BLUE[cy, cx]:
                 clr = "blue"
-            assert clr != "", f"Failed to identify an unknown contour as a camp, COM: ({cx, cy})"
+            assert (
+                clr != ""
+            ), f"Failed to identify an unknown contour as a camp, COM: ({cx, cy})"
             camps[clr] = (cx, cy)
 
         # if the contour is not a circle (casualty)
         else:
-            severity: int = 0
-            age_grp: int = 0
+            severity = 0
+            age_grp = 0
 
             if MASK_SAFE[cy, cx]:
                 severity = 1
@@ -112,7 +111,10 @@ def get_humans_and_camps(
                 severity = 2
             elif MASK_SEVERE[cy, cx]:
                 severity = 3
-            assert severity != 0, f"Failed to get severity info on a casualty, COM: ({cx}, {cy}), Maybe check mask ranges?"
+
+            assert (
+                severity != 0
+            ), f"Failed to get severity info on a casualty, COM: ({cx}, {cy}), maybe check the severity mask ranges?"
 
             match cnt.shape[0]:
                 case 4:
@@ -121,16 +123,18 @@ def get_humans_and_camps(
                     age_grp = 2
                 case 10:
                     age_grp = 3
+
             assert age_grp != 0, "Failed to identify the shape of a contour"
 
             casualties.append(((cx, cy), age_grp, severity))
 
+
 def get_priority_for_all_points(
     camps: dict[str, tuple[int, int]],
-    casualties: list[tuple[tuple[int, int], int, int]]
+    casualties: list[tuple[tuple[int, int], int, int]],
 ) -> list[list[float]]:
     priorities: list[list[float]] = []
-    for camp in camps: 
+    for camp in camps:
         x, y = camps[camp]
         p: list[float] = []
         for victim in casualties:
@@ -142,4 +146,3 @@ def get_priority_for_all_points(
         priorities.append(p)
 
     return priorities
-
