@@ -79,15 +79,15 @@ def get_humans_and_camps(
 
         M = cv2.moments(cnt)
 
-        if cnt.shape[0] > 2:
-            cx = int(M["m10"] / M["m00"])
-            cy = int(M["m01"] / M["m00"])
-        else:
+        if cnt.shape[0] <= 2:
             continue
+
+        cx = int(M["m10"] / M["m00"])
+        cy = int(M["m01"] / M["m00"])
 
         # cnt.shape[0] = number of points in the contour
         # if the contour is a circle (camp)
-        if cnt.shape[0] not in [3, 4, 10] and cnt.shape[0] > 2:
+        if cnt.shape[0] not in [3, 4, 10]:
             clr = ""
             if MASK_CAMP_PINK[cy, cx]:
                 clr = "pink"
@@ -97,7 +97,7 @@ def get_humans_and_camps(
                 clr = "blue"
             assert (
                 clr != ""
-            ), f"Failed to identify an unknown contour as a camp, COM: ({cx, cy})"
+            ), f"Failed to identify an unknown contour as a camp, COM: ({cx, cy}), maybe check camp mask ranges?"
             camps[clr] = (cx, cy)
 
         # if the contour is not a circle (casualty)
@@ -129,13 +129,14 @@ def get_humans_and_camps(
             casualties.append(((cx, cy), age_grp, severity))
 
 
+# Gets priority of all casualties relative to a camp
 def get_priority_for_all_points(
-    camps: dict[str, tuple[int, int]],
+    campCoords: dict[str, tuple[int, int]],
     casualties: list[tuple[tuple[int, int], int, int]],
 ) -> list[list[float]]:
     priorities: list[list[float]] = []
-    for camp in camps:
-        x, y = camps[camp]
+    for camp in campCoords:
+        x, y = campCoords[camp]
         p: list[float] = []
         for victim in casualties:
             vx, vy = victim[0]

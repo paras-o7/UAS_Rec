@@ -113,9 +113,15 @@ The analysis of image is done using the functions in `functions.py`.
     - Returns a list of 3 elements (1 for each camp) which themselves are lists of floating point values (relative priority scores for each casualty marker wrt the respective camp).
     - If the casualty marker is at $(x, y)$ and the respective camp is at $(x_1, y_1)$, and the casualty marker's age group is $a$ and severity is $s$ then the relative priority points is:
 
-    $$\text{rel score} = \dfrac{a\cdot s}{\sqrt[4]{(x_1 - x) ^ 2 + (y_1 - y)^2}}$$
+        $$\text{rel score} = \dfrac{a\cdot s}{\sqrt[4]{(x_1 - x) ^ 2 + (y_1 - y)^2}}$$
 
-    $$\text{ie, rel score} = \dfrac{\text{age grp}\cdot\text{severity}}{\sqrt{\text{distance between the casualty and the camp}}}$$
+        $$\text{ie, rel score} = \dfrac{\text{age grp}\cdot\text{severity}}{\sqrt{\text{distance between the casualty and the camp}}}$$
 
 ### `main.py`
 <img src="assets/README/algo_main_py.svg" alt="algorithm"/>
+
+## Example output
+| Original        | Output        |
+----------------- | --------------
+| <img src="./assets/README/1.png" width="256" alt="1.png, overlay"/> | <img src="./assets/README/1-output.png" width="256" alt="1.png, output"/>
+| <img src="./assets/README/4.png" width="256" alt="4.png, overlay"/> | <img src="./assets/README/4-output.png" width="256" alt="4.png, output"/>

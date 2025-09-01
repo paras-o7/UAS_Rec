@@ -1,26 +1,24 @@
 #! /usr/bin/env python3
 import cv2, os
-import numpy as np
 from pprint import pprint
 from functions import ground_overlay, get_humans_and_camps, get_priority_for_all_points
 
 DEBUG = False
+# Path to images to analyse
+IMAGES = [
+    "assets/1.png",
+    "assets/2.png",
+    "assets/3.png",
+    "assets/4.png",
+    "assets/5.png",
+    "assets/6.png",
+    "assets/7.png",
+    "assets/8.png",
+    "assets/9.png",
+    "assets/10.png",
+]
 
 if __name__ == "__main__":
-    # Path to images to analyse
-    IMAGES = [
-        "assets/1.png",
-        "assets/2.png",
-        "assets/3.png",
-        "assets/4.png",
-        "assets/5.png",
-        "assets/6.png",
-        "assets/7.png",
-        "assets/8.png",
-        "assets/9.png",
-        "assets/10.png",
-    ]
-
     # List of assigned camps to a casualty
     # {
     #     "image1.png": {
@@ -73,8 +71,9 @@ if __name__ == "__main__":
         for i in range(NCASUALTY):
 
             ####
+            # NOTE
             # In `PINK_POINTS`, `BLUE_POINTS`, `GRAY_POINTS`, and `CASUALTIES`,
-            # each index represents the same point.
+            # each index represents the same unique casualty.
 
             if i % 3 == 0:  # PINK
                 maxidx = PINK_POINTS.index(max(PINK_POINTS))
@@ -139,14 +138,16 @@ if __name__ == "__main__":
         camp_sum_avg = sum(camp_sum.values())/NCASUALTY
 
         image_name = os.path.basename(path)
+        ####
+        # Note that FINAL_CAMP_ASSIGNMENT contains all the info,
+        # ie, coordinates of each casualty and their relative scores,
+        # for a specific image.
         CASUALTY_ASSIGNMENT_DEETS[image_name] = camp_scores
         CAMP_PRIORITY_SCORES_TOTAL[image_name] = camp_sum
         CAMP_PRIORITY_SCORES_AVG[image_name] = camp_sum_avg
 
         cv2.imwrite(f"assets/outputs/{os.path.basename(path)}", img)
 
-    ####
-    # Note that FINAL_CAMP_ASSIGNMENT contains all the info
     print("CASUALTY CAMP ASSIGNMENT:", "="*15)
     pprint(CASUALTY_ASSIGNMENT_DEETS)
 
@@ -156,7 +157,6 @@ if __name__ == "__main__":
     print("CAMP PRIORITY SCORES (AVERAGE) ", "="*15)
     pprint(CAMP_PRIORITY_SCORES_AVG)
 
-    
     print("Images in order based on avg priority scores", "="*15)
     pprint([k for k, v in sorted(CAMP_PRIORITY_SCORES_AVG.items(), key=lambda item: item[1])])
 
